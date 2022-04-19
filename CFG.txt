@@ -3,7 +3,7 @@ Z XY
 X AA
 Y BC
 C DG
-G ga
+G da
 D dd
 B bb
 A aa

@@ -25,7 +25,7 @@ with open ('CFG.txt') as f:
 # split values into left and right side
 	valueList = []
 	for v in cfgDict.values():
-		valueList .append( list(v))
+		valueList .append( list(v)) 
 		print(list(v))
 		
 
