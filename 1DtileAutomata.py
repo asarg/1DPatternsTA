@@ -165,7 +165,7 @@ class oneDFreezTemp1TA():
 				if len(occurences) > 0:
 					self.nonterminals[producible] = 1
 				for occurence in occurences:
-					newProducible = producible[:occurence] + afterTransitionString + producible[occurence+2:]
+					newProducible = producible[:occurence] + afterTransitionString + producible[occurence+4:]
 					if newProducible not in producibles:
 						newProducibles.add(newProducible)
 
@@ -233,6 +233,12 @@ affinities = []
 transitions = []
 #= {('1','A'),('1','2'),('B','A'),('2','B'),('2','5'),('5','1'),('1','E'),('E','B'),('5','3'),('C','E'),('3','C'),('3','6'),('6','E'),('6','6'),('6','B'),('6','A'),('6','4'),('F','C'),('5','F'),('2','F'),('1','F'),('D','F'),('4','D')}
 
+ruleAppear = {}
+
+for letter in symbols[1]:
+	ruleAppear[letter] = {"L":0, "R":0}
+
+#print(ruleAppear)
 
 #loop through the cfg rules in cfgDict
 for rule in valueList:
@@ -243,7 +249,10 @@ for rule in valueList:
 		state1 = "L" + rule[0]
 		initStates.append("L" + rule[0])
 	if rule[0].isupper():
-		# make a dictionary to make when a upper case letter appears on the left (we need to a make a left TR)
+		# Keep track of what sides rules appear on
+		ruleAppear[rule[0]]["L"] = 1
+
+		# get color of sticky state
 		t = rule[0]
 		while t.isupper():
 			t = cfgDict[t][1]
@@ -255,7 +264,10 @@ for rule in valueList:
 		state2 = "R" + rule[1]
 		initStates.append("R" + rule[1])
 	if rule[1].isupper():
-		# Same but for right
+		# Keep track of what sides rules appear on
+		ruleAppear[rule[1]]["R"] = 1
+
+		# Get color of sticky state
 		t = rule[1]
 		while t.isupper():
 			t = cfgDict[t][0]
@@ -264,8 +276,64 @@ for rule in valueList:
 
 	affinities.append((state1, state2))
 
-for symbol in cfgDict.keys():
-	print(symbol, "->", cfgDict[symbol][0], cfgDict[symbol][1])
+for sym in cfgDict.keys():
+	# print(symbol, "->", cfgDict[symbol][0], cfgDict[symbol][1])
+	# Get start states
+
+	rule = cfgDict[sym]
+
+	state1 = "0"
+	if rule[0].islower(): 
+		state1 = "L" + rule[0]
+		initStates.append("L" + rule[0])
+	if rule[0].isupper():
+		# Keep track of what sides rules appear on
+		ruleAppear[rule[0]]["L"] = 1
+
+		# get color of sticky state
+		t = rule[0]
+		while t.isupper():
+			t = cfgDict[t][1]
+
+		state1 = rule[0] + t
+
+	state2 = "0"
+	if rule[1].islower():
+		state2 = "R" + rule[1]
+		initStates.append("R" + rule[1])
+	if rule[1].isupper():
+		# Keep track of what sides rules appear on
+		ruleAppear[rule[1]]["R"] = 1
+
+		# Get color of sticky state
+		t = rule[1]
+		while t.isupper():
+			t = cfgDict[t][0]
+
+		state2 = rule[1] + t
+
+	newState1 = state1
+	newState2 = state2
+
+	if ruleAppear[sym]["L"] == 1:
+		# Add Transition Rule
+		print(sym, "appears left")
+
+		# Rule appears on left, means we need right type of assembly (ie assembly with right affinity or "glue")
+		# The state must first walk to the left side to change all the middle states to the right symbol
+		newState1 = sym + state1[1]
+
+		transitions.append(((state1, state2), (newState1, state2)))
+
+	if ruleAppear[sym]["R"] == 1:
+		# Add Transition Rule
+		print(sym, "appears right")
+
+		# reverse from above
+		newState2 = sym + state2[1]
+
+		transitions.append(((state1, state2), (state1, newState2)))
+
 	
 
 
@@ -299,3 +367,7 @@ while size != newSize and x < 5:
 	newSize = len(simulation.producibles)
 
 print("Terminals: ", simulation.getTerminals())
+
+
+for t in simulation.getTerminals():
+	print(t[-2:])
