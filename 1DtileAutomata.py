@@ -225,8 +225,8 @@ for t in symbols[0]:
 	#initStates.append("L" + t)
 	#initStates.append("R" + t)
 
-for nt in symbols[1]:
-	states.append(nt)
+	for nt in symbols[1]:
+		states.append(nt + t)
 	
 
 affinities = []
